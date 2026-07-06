@@ -1,3 +1,4 @@
+import os
 import shutil
 import subprocess
 import sys
@@ -31,23 +32,40 @@ def get_repo_name(repo_url: str) -> str:
     return repo_name or "repo"
 
 
+def _remove_readonly(func, path, exc_info):
+    os.chmod(path, 0o666)
+    func(path)
+
+
 def clean_repo(repo_path: Path) -> None:
     for excluded in EXCLUDED_DIRS:
         excluded_path = repo_path / excluded
         if excluded_path.exists():
             if excluded_path.is_dir():
-                shutil.rmtree(excluded_path)
+                shutil.rmtree(excluded_path, onerror=_remove_readonly)
             else:
-                excluded_path.unlink()
+                try:
+                    excluded_path.unlink()
+                except PermissionError:
+                    os.chmod(excluded_path, 0o666)
+                    excluded_path.unlink()
 
     for path in repo_path.rglob("*"):
         if path.is_file():
             if path.suffix.lower() not in ALLOWED_EXTENSIONS:
-                path.unlink()
+                try:
+                    path.unlink()
+                except PermissionError:
+                    os.chmod(path, 0o666)
+                    path.unlink()
 
     for path in sorted((p for p in repo_path.rglob("*") if p.is_dir()), key=lambda p: len(str(p)), reverse=True):
         if not any(path.iterdir()):
-            path.rmdir()
+            try:
+                path.rmdir()
+            except PermissionError:
+                os.chmod(path, 0o777)
+                path.rmdir()
 
 
 def clone_repo(repo_url: str) -> Path:
