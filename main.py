@@ -1,10 +1,15 @@
-from langchain_ollama.llms import OllamaLLM
+import os
+from langchain_groq import ChatGroq
 from langchain_core.prompts import ChatPromptTemplate
+from dotenv import load_dotenv
 
-model = OllamaLLM(model="llama3.2")
+load_dotenv()
+os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
 
-#repo = "https://github.com/Jayeshraundal/stm32_custombootloader"
-#question = "What is the llm?"
+model = ChatGroq(
+    model="llama-3.3-70b-versatile",
+    temperature=0 
+)
 
 template = """You are a helpful assistant that answers questions about the given git repository. 
     
@@ -23,4 +28,3 @@ while True:
 
     response = chain.invoke({"question": question})
     print(response)
-    
