@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, List
 
-from repo_loader import ALLOWED_EXTENSIONS, clone_repo
+from repo_loader import ALLOWED_EXTENSIONS, RepositoryLoader
 
 
 def load_repo_files(repo_path: Path) -> List[Dict[str, str]]:
@@ -33,7 +33,7 @@ def load_repo_files(repo_path: Path) -> List[Dict[str, str]]:
 
 
 def index_repo(repo_url: str) -> None:
-    repo_path = clone_repo(repo_url)
+    repo_path = RepositoryLoader.clone_repo(repo_url)
     print(f"Repository ready in: {repo_path}")
 
     documents = load_repo_files(repo_path)
